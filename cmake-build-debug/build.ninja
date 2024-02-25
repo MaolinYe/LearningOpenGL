@@ -63,6 +63,13 @@ build CMakeFiles/LearningOpenGL.dir/src/glad.c.obj: C_COMPILER__LearningOpenGL_D
   OBJECT_DIR = CMakeFiles\LearningOpenGL.dir
   OBJECT_FILE_DIR = CMakeFiles\LearningOpenGL.dir\src
 
+build CMakeFiles/LearningOpenGL.dir/shader.cpp.obj: CXX_COMPILER__LearningOpenGL_Debug C$:/Users/Yezi/Desktop/LearningOpenGL/shader.cpp || cmake_object_order_depends_target_LearningOpenGL
+  DEP_FILE = CMakeFiles\LearningOpenGL.dir\shader.cpp.obj.d
+  FLAGS = -O3 -fopenmp -g -std=gnu++14
+  INCLUDES = -IC:/Users/Yezi/Desktop/LearningOpenGL/include
+  OBJECT_DIR = CMakeFiles\LearningOpenGL.dir
+  OBJECT_FILE_DIR = CMakeFiles\LearningOpenGL.dir
+
 
 # =============================================================================
 # Link build statements for EXECUTABLE target LearningOpenGL
@@ -71,7 +78,7 @@ build CMakeFiles/LearningOpenGL.dir/src/glad.c.obj: C_COMPILER__LearningOpenGL_D
 #############################################
 # Link the executable LearningOpenGL.exe
 
-build LearningOpenGL.exe: CXX_EXECUTABLE_LINKER__LearningOpenGL_Debug CMakeFiles/LearningOpenGL.dir/main.cpp.obj CMakeFiles/LearningOpenGL.dir/src/glad.c.obj | ../lib/glfw3.dll
+build LearningOpenGL.exe: CXX_EXECUTABLE_LINKER__LearningOpenGL_Debug CMakeFiles/LearningOpenGL.dir/main.cpp.obj CMakeFiles/LearningOpenGL.dir/src/glad.c.obj CMakeFiles/LearningOpenGL.dir/shader.cpp.obj | ../lib/glfw3.dll
   FLAGS = -O3 -fopenmp -g
   LINK_LIBRARIES = ../lib/glfw3.dll  -lkernel32 -luser32 -lgdi32 -lwinspool -lshell32 -lole32 -loleaut32 -luuid -lcomdlg32 -ladvapi32
   OBJECT_DIR = CMakeFiles\LearningOpenGL.dir

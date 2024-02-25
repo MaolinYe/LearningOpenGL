@@ -15,3 +15,31 @@
 ### 矩形
 元素缓冲对象(Element Buffer Object，EBO)，也叫索引缓冲对象(Index Buffer Object，IBO)存储 OpenGL 用来决定要绘制哪些顶点的索引
 ![img.png](学习OpenGL之旅/入门/矩形.png)
+### 着色器
+向量重组：可以使用4个字母任意组合来创建一个和原来向量一样长的（同类型）新向量
+```c++
+vec2 someVec;
+vec4 differentVec = someVec.xyxx;
+vec3 anotherVec = differentVec.zyw;
+vec4 otherVec = someVec.xxxx + anotherVec.yxzy;
+```
+uniform全局变量
+![](学习OpenGL之旅/入门/变色矩形.gif)
+会自动插值
+![img.png](学习OpenGL之旅/入门/渐变.png)
+编写一个着色器类
+```c++
+class Shader {
+public:
+    // 程序ID
+    unsigned int ID;
+    // 构造器读取并构建着色器
+    Shader(const char *vertexPath, const char *fragmentPath);
+    // 使用/激活程序
+    void use();
+    // uniform工具函数
+    void setBool(const std::string &name, bool value) const;
+    void setInt(const std::string &name, int value) const;
+    void setFloat(const std::string &name, float value) const;
+};
+```
