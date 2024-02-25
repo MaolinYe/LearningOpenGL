@@ -13,3 +13,5 @@
 顶点数组对象（Vertex Array Object，VAO）管理顶点数据，存储顶点数组所需的状态信息
 ![img.png](学习OpenGL之旅/入门/三角形.png)
 ### 矩形
+元素缓冲对象(Element Buffer Object，EBO)，也叫索引缓冲对象(Index Buffer Object，IBO)存储 OpenGL 用来决定要绘制哪些顶点的索引
+![img.png](学习OpenGL之旅/入门/矩形.png)
