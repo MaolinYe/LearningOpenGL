@@ -19,7 +19,7 @@ void init() {
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3); // 指定创建的内容必须兼容的客户端 API 版本
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE); // 指定要为其创建内容的 OpenGL 配置文件
     //glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE); // 指定 OpenGL 上下文是否应向前兼容
-    window = glfwCreateWindow(1024, 1024, "LearnOpenGL", nullptr, nullptr);
+    window = glfwCreateWindow(512, 512, "LearnOpenGL", nullptr, nullptr);
     if (window == nullptr) {
         std::cout << "Failed to create GLFW window" << std::endl;
         glfwTerminate();
@@ -97,7 +97,7 @@ int main() {
     shader.setInt("texture2", 1);
     glm::mat4 transform;
     while (!glfwWindowShouldClose(window)) {
-        transform = glm::rotate(transform, (float)glm::radians(glfwGetTime()), glm::vec3(0.0, 0.0, 1.0));
+        transform = glm::rotate(transform, (float)glfwGetTime()/10000, glm::vec3(0.0, 0.0, 1.0));
         unsigned int transformLoc = glGetUniformLocation(shader.ID, "transform");
         glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(transform));
         shader.use();
