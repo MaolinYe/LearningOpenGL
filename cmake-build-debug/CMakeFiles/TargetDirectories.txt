@@ -1,3 +1,3 @@
-C:/Users/Yezi/Desktop/LearningOpenGL/cmake-build-debug/CMakeFiles/LearningOpenGL.dir
-C:/Users/Yezi/Desktop/LearningOpenGL/cmake-build-debug/CMakeFiles/edit_cache.dir
-C:/Users/Yezi/Desktop/LearningOpenGL/cmake-build-debug/CMakeFiles/rebuild_cache.dir
+C:/Users/Tencent go/Desktop/LearningOpenGL/cmake-build-debug/CMakeFiles/LearningOpenGL.dir
+C:/Users/Tencent go/Desktop/LearningOpenGL/cmake-build-debug/CMakeFiles/edit_cache.dir
+C:/Users/Tencent go/Desktop/LearningOpenGL/cmake-build-debug/CMakeFiles/rebuild_cache.dir

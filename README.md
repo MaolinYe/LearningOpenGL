@@ -43,3 +43,53 @@ public:
     void setFloat(const std::string &name, float value) const;
 };
 ```
+### 纹理
+纹理环绕方式：当纹理坐标超过范围的处理方式  
+纹理过滤：线性插值和邻近过滤  
+缩小：多级渐远纹理，mipmap  
+顶点着色器
+```c++
+#version 330 core
+layout (location = 0) in vec3 aPos;
+layout (location = 1) in vec3 aColor;
+layout (location = 2) in vec2 aTexCoord;
+
+out vec3 ourColor;
+out vec2 TexCoord;
+
+void main()
+{
+    gl_Position = vec4(aPos, 1.0);
+    ourColor = aColor;
+    TexCoord = aTexCoord;
+}
+```
+片源着色器
+```c++
+#version 330 core
+out vec4 FragColor;
+
+in vec3 ourColor;
+in vec2 TexCoord;
+
+uniform sampler2D ourTexture;
+
+void main()
+{
+    FragColor = texture(ourTexture, TexCoord)*vec4(ourColor,1.0);
+}
+```
+![img.png](学习OpenGL之旅/入门/纹理矩形.png)
+#### 纹理单元
+一张纹理的索引  
+顶点着色器：mix函数需要接受两个值作为参数，并对它们根据第三个参数进行线性插值。如果第三个值是0.0，它会返回第一个输入；如果是1.0，会返回第二个输入值。0.2会返回80%的第一个输入颜色和20%的第二个输入颜色，即返回两个纹理的混合色
+```c++
+uniform sampler2D texture1;
+uniform sampler2D texture2;
+
+void main()
+{
+    FragColor = mix(texture(texture1, TexCoord), texture(texture2, TexCoord), 0.5);
+}
+```
+![img.png](学习OpenGL之旅/入门/双纹理.png)

@@ -1,7 +1,6 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include <iostream>
-#include <cstring>
 #include "stb_image.h"
 #include "shader.h"
 
@@ -17,7 +16,7 @@ void init() {
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3); // 指定创建的内容必须兼容的客户端 API 版本
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE); // 指定要为其创建内容的 OpenGL 配置文件
     //glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE); // 指定 OpenGL 上下文是否应向前兼容
-    window = glfwCreateWindow(1024, 1024, "LearnOpenGL", NULL, NULL);
+    window = glfwCreateWindow(2048, 1024, "LearnOpenGL", NULL, NULL);
     if (window == NULL) {
         std::cout << "Failed to create GLFW window" << std::endl;
         glfwTerminate();
@@ -31,28 +30,6 @@ void init() {
     }
 }
 
-void load_texture(unsigned int &texture, const char *file) {
-    glGenTextures(1, &texture);
-    glBindTexture(GL_TEXTURE_2D, texture);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT); // 镜像环绕
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT); // 镜像环绕
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR); // 缩小使用多级渐远纹理
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST); // 放大使用邻近过滤
-    int width, height, nrChannels; // 图像的宽度、高度和颜色通道的个数
-    stbi_set_flip_vertically_on_load(true); // 上下颠倒
-    unsigned char *data = stbi_load(file, &width, &height, &nrChannels, 0);
-    if (data) {
-        const char *suffix = file + strlen(file) - 4;
-        if (strcmp(suffix, ".png") == 0) // png图像4通道
-            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
-        else
-            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
-        glGenerateMipmap(GL_TEXTURE_2D);
-    } else {
-        std::cout << "Failed to load texture" << std::endl;
-    }
-    stbi_image_free(data);
-}
 
 int main() {
     init();
@@ -78,7 +55,7 @@ int main() {
     glEnableVertexAttribArray(0);// 位置属性
     glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void *) (3 * sizeof(float)));
     glEnableVertexAttribArray(1);// 颜色属性
-    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void *) (6 * sizeof(float)));
+    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
     glEnableVertexAttribArray(2);
     unsigned int EBO; // 复制索引数组到一个索引缓冲中，供OpenGL使用
     glGenBuffers(1, &EBO);
@@ -86,19 +63,25 @@ int main() {
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
     Shader shader(R"(C:\Users\Tencent go\Desktop\LearningOpenGL\shaders\shader.vs)",
                   R"(C:\Users\Tencent go\Desktop\LearningOpenGL\shaders\shader.fs)");
-    unsigned int texture1;
-    load_texture(texture1, R"(C:\Users\Tencent go\Desktop\LearningOpenGL\textures\container.jpg)");
-    unsigned int texture2;
-    load_texture(texture2, R"(C:\Users\Tencent go\Desktop\LearningOpenGL\textures\awesomeface.png)");
-    shader.use();
-    shader.setInt("texture1", 0);
-    shader.setInt("texture2", 1);
+    unsigned int texture;
+    glGenTextures(1, &texture);
+    glBindTexture(GL_TEXTURE_2D, texture);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT); // 镜像环绕
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT); // 镜像环绕
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR); // 缩小使用多级渐远纹理
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST); // 放大使用邻近过滤
+    int width, height, nrChannels; // 图像的宽度、高度和颜色通道的个数
+    unsigned char *data = stbi_load(R"(C:\Users\Tencent go\Desktop\LearningOpenGL\textures\container.jpg)", &width, &height, &nrChannels, 0);
+    if (data) {
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+        glGenerateMipmap(GL_TEXTURE_2D);
+    } else {
+        std::cout << "Failed to load texture" << std::endl;
+    }
+    stbi_image_free(data);
     while (!glfwWindowShouldClose(window)) {
         shader.use();
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, texture1);
-        glActiveTexture(GL_TEXTURE1);
-        glBindTexture(GL_TEXTURE_2D, texture2);
+        glBindTexture(GL_TEXTURE_2D, texture);
         glBindVertexArray(VAO);
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
         glfwSwapBuffers(window); // 交换在此渲染迭代期间用于渲染的颜色缓冲区
