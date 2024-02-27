@@ -134,4 +134,48 @@ glm::ortho(0.0f, 800.0f, 0.0f, 600.0f, 0.1f, 100.0f);
 glm::mat4 proj = glm::perspective(glm::radians(45.0f), (float)width/(float)height, 0.1f, 100.0f);
 ```
 #### 屏幕空间(Screen Space)
-OpenGL会使用glViewPort内部的参数来将标准化设备坐标映射到屏幕坐标，每个坐标都关联了一个屏幕上的点，这个过程称为视口变换
+OpenGL会使用glViewPort内部的参数来将标准化设备坐标映射到屏幕坐标，每个坐标都关联了一个屏幕上的点，这个过程称为视口变换  
+顶点着色器
+```c++
+#version 330 core
+layout (location = 0) in vec3 aPos;
+layout (location = 1) in vec2 aTexCoord;
+
+out vec2 TexCoord;
+uniform mat4 transform;
+
+void main()
+{
+    gl_Position = transform *vec4(aPos, 1.0);
+    TexCoord = aTexCoord;
+}
+```
+mvp变换+深度缓冲
+```c++
+    glm::mat4 view;
+    view = glm::translate(view, glm::vec3(0, 0, -3.f));
+    glm::mat4 projection;
+    projection = glm::perspective(glm::radians(45.0f), 1.f, 0.1f, 100.0f);
+    glEnable(GL_DEPTH_TEST); // 深度缓存
+    while (!glfwWindowShouldClose(window)) {
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // 清除深度缓存
+        shader.use();
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, texture1);
+        glActiveTexture(GL_TEXTURE1);
+        glBindTexture(GL_TEXTURE_2D, texture2);
+        glBindVertexArray(VAO);
+        for (auto cubePosition: cubePositions) {
+            glm::mat4 model;
+            model = glm::translate(model, cubePosition);
+            model = glm::rotate(model, (float) glfwGetTime() * glm::radians(45.0f), glm::vec3(1.0f, 1.0f, 1.0f));
+            glm::mat4 transform = projection * view * model;
+            int transformLoc = glGetUniformLocation(shader.ID, "transform");
+            glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(transform));
+            glDrawArrays(GL_TRIANGLES, 0, 36);
+        }
+        glfwSwapBuffers(window); // 交换在此渲染迭代期间用于渲染的颜色缓冲区
+        glfwPollEvents(); // 检查是否触发了任何事件（如键盘输入或鼠标移动事件）
+    }
+```
+![MVP变换.gif](学习OpenGL之旅/入门/MVP变换.gif)
