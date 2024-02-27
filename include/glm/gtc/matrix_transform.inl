@@ -502,7 +502,7 @@ namespace glm
 			(static_cast<T>(viewport[3]) - static_cast<T>(2) * (center.y - static_cast<T>(viewport[1]))) / delta.y,
 			static_cast<T>(0));
 
-		// Translate and scale the picked region to the entire window
+		// Translate and scale the picked region to the entire mainWindow
 		Result = translate(Result, Temp);
 		return scale(Result, tvec3<T, P>(static_cast<T>(viewport[2]) / delta.x, static_cast<T>(viewport[3]) / delta.y, static_cast<T>(1)));
 	}

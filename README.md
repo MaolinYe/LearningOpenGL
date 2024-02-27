@@ -157,7 +157,7 @@ mvp变换+深度缓冲
     glm::mat4 projection;
     projection = glm::perspective(glm::radians(45.0f), 1.f, 0.1f, 100.0f);
     glEnable(GL_DEPTH_TEST); // 深度缓存
-    while (!glfwWindowShouldClose(window)) {
+    while (!glfwWindowShouldClose(mainWindow)) {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // 清除深度缓存
         shader.use();
         glActiveTexture(GL_TEXTURE0);
@@ -174,8 +174,86 @@ mvp变换+深度缓冲
             glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(transform));
             glDrawArrays(GL_TRIANGLES, 0, 36);
         }
-        glfwSwapBuffers(window); // 交换在此渲染迭代期间用于渲染的颜色缓冲区
+        glfwSwapBuffers(mainWindow); // 交换在此渲染迭代期间用于渲染的颜色缓冲区
         glfwPollEvents(); // 检查是否触发了任何事件（如键盘输入或鼠标移动事件）
     }
 ```
 ![MVP变换.gif](学习OpenGL之旅/入门/MVP变换.gif)
+### 摄像机
+#### LookAt矩阵
+```c++
+glm::mat4 view;
+view = glm::lookAt(glm::vec3(0.0f, 0.0f, 3.0f), // 摄像机位置
+           glm::vec3(0.0f, 0.0f, 0.0f),         // 看向目标的位置
+           glm::vec3(0.0f, 1.0f, 0.0f));        // up向量
+```
+处理输入事件
+```c++
+void processInput(GLFWwindow *window) {
+    if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
+        glfwSetWindowShouldClose(window, true);
+    auto cameraSpeed = static_cast<float> (16 * deltaTime);
+    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
+        cameraPosition += cameraSpeed * cameraFront;
+    if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
+        cameraPosition -= cameraSpeed * cameraFront;
+    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
+        cameraPosition -= glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
+    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+        cameraPosition += glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
+}
+```
+![移动摄像机.gif](学习OpenGL之旅/入门/移动摄像机.gif)
+#### 欧拉角
+捕捉光标，监听鼠标移动事件
+```c++
+    glfwSetInputMode(mainWindow, GLFW_CURSOR, GLFW_CURSOR_DISABLED); // 捕捉光标
+    glfwSetCursorPosCallback(mainWindow, mouse_callback); // 监听鼠标移动事件
+```
+根据鼠标上下左右移动计算俯仰角和偏航角，鼠标位置的初始值设置为屏幕的中心
+```c++
+bool firstMouse = true;
+float lastX=256, lastY=256, yaw = 0, pitch = 0;
+void mouse_callback(GLFWwindow *window, double xpos, double ypos) {
+    if (firstMouse) {
+        lastX = xpos;
+        lastY = ypos;
+        firstMouse = false;
+    }
+    float xoffset = xpos - lastX;
+    float yoffset = lastY - ypos;
+    lastX = xpos;
+    lastY = ypos;
+    float sensitivity = 0.05;
+    xoffset *= sensitivity;
+    yoffset *= sensitivity;
+    yaw += xoffset;
+    pitch += yoffset;
+    if (pitch > 89.0f)
+        pitch = 89.0f;
+    if (pitch < -89.0f)
+        pitch = -89.0f;
+    glm::vec3 front;
+    front.x = cos(glm::radians(yaw)) * cos(glm::radians(pitch));
+    front.y = sin(glm::radians(pitch));
+    front.z = sin(glm::radians(yaw)) * cos(glm::radians(pitch));
+    cameraFront = glm::normalize(front);
+}
+```
+#### 鼠标缩放
+注册鼠标滚轮的回调函数
+```c++
+glfwSetScrollCallback(window, scroll_callback);
+```
+yoffset值代表竖直滚动的大小，改变视角fov大小，把缩放级别(Zoom Level)限制在1.0f到45.0f
+```c++
+void scroll_callback(GLFWwindow *window, double xoffset, double yoffset) {
+    if (fov >= 1.0f && fov <= 45.0f)
+        fov -= yoffset;
+    if (fov <= 1.0f)
+        fov = 1.0f;
+    if (fov >= 45.0f)
+        fov = 45.0f;
+}
+```
+![移动视角缩放.gif](学习OpenGL之旅/入门/移动视角缩放.gif)

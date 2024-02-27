@@ -372,13 +372,13 @@ namespace glm
 	GLM_FUNC_DECL tmat4x4<T, defaultp> tweakedInfinitePerspective(
 		T fovy, T aspect, T near, T ep);
 
-	/// Map the specified object coordinates (obj.x, obj.y, obj.z) into window coordinates.
+	/// Map the specified object coordinates (obj.x, obj.y, obj.z) into mainWindow coordinates.
 	/// 
 	/// @param obj Specify the object coordinates.
 	/// @param model Specifies the current modelview matrix
 	/// @param proj Specifies the current projection matrix
 	/// @param viewport Specifies the current viewport
-	/// @return Return the computed window coordinates.
+	/// @return Return the computed mainWindow coordinates.
 	/// @tparam T Native type used for the computation. Currently supported: half (not recommanded), float or double.
 	/// @tparam U Currently supported: Floating-point types and integer types.
 	/// @see gtc_matrix_transform
@@ -389,9 +389,9 @@ namespace glm
 		tmat4x4<T, P> const & proj,
 		tvec4<U, P> const & viewport);
 
-	/// Map the specified window coordinates (win.x, win.y, win.z) into object coordinates.
+	/// Map the specified mainWindow coordinates (win.x, win.y, win.z) into object coordinates.
 	///
-	/// @param win Specify the window coordinates to be mapped.
+	/// @param win Specify the mainWindow coordinates to be mapped.
 	/// @param model Specifies the modelview matrix
 	/// @param proj Specifies the projection matrix
 	/// @param viewport Specifies the viewport

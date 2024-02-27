@@ -8,10 +8,56 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
-GLFWwindow *window;
+GLFWwindow *mainWindow;
+glm::vec3 cameraPosition(0, 0, 3.f);
+glm::vec3 cameraFront = glm::vec3(0.0f, 0.0f, -1.0f);
+glm::vec3 cameraUp = glm::vec3(0.0f, 1.0f, 0.0f);
+double deltaTime;
+const int screenWidth=512;
+const int screenHeight=512;
 
-void framebuffer_size_callback(GLFWwindow *w, int width, int height) {
+void framebuffer_size_callback(GLFWwindow *window, int width, int height) {
     glViewport(0, 0, width, height); // 设置 OpenGL 渲染窗口的大小，前两个参数设置窗口左下角的位置，第三个和第四个参数以像素为单位设置渲染窗口的宽度和高度
+}
+
+bool firstMouse = true;
+float lastX = screenWidth/2, lastY = screenHeight/256, yaw = 0, pitch = 0;
+
+void mouse_callback(GLFWwindow *window, double xpos, double ypos) {
+    if (firstMouse) {
+        lastX = xpos;
+        lastY = ypos;
+        firstMouse = false;
+    }
+    float xoffset = xpos - lastX;
+    float yoffset = lastY - ypos;
+    lastX = xpos;
+    lastY = ypos;
+    float sensitivity = 0.05;
+    xoffset *= sensitivity;
+    yoffset *= sensitivity;
+    yaw += xoffset;
+    pitch += yoffset;
+    if (pitch > 89.0f)
+        pitch = 89.0f;
+    if (pitch < -89.0f)
+        pitch = -89.0f;
+    glm::vec3 front;
+    front.x = cos(glm::radians(yaw)) * cos(glm::radians(pitch));
+    front.y = sin(glm::radians(pitch));
+    front.z = sin(glm::radians(yaw)) * cos(glm::radians(pitch));
+    cameraFront = glm::normalize(front);
+}
+
+float fov = 45.f;
+
+void scroll_callback(GLFWwindow *window, double xoffset, double yoffset) {
+    if (fov >= 1.0f && fov <= 45.0f)
+        fov -= yoffset;
+    if (fov <= 1.0f)
+        fov = 1.0f;
+    if (fov >= 45.0f)
+        fov = 45.0f;
 }
 
 void init() {
@@ -20,14 +66,17 @@ void init() {
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3); // 指定创建的内容必须兼容的客户端 API 版本
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE); // 指定要为其创建内容的 OpenGL 配置文件
     //glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE); // 指定 OpenGL 上下文是否应向前兼容
-    window = glfwCreateWindow(512, 512, "LearnOpenGL", nullptr, nullptr);
-    if (window == nullptr) {
-        std::cout << "Failed to create GLFW window" << std::endl;
+    mainWindow = glfwCreateWindow(screenWidth, screenHeight, "LearnOpenGL", nullptr, nullptr);
+    if (mainWindow == nullptr) {
+        std::cout << "Failed to create GLFW mainWindow" << std::endl;
         glfwTerminate();
         exit(-1);
     }
-    glfwMakeContextCurrent(window); // 告诉 GLFW 将窗口的内容作为当前线程上的主要内容
-    glfwSetFramebufferSizeCallback(window, framebuffer_size_callback); // 注册窗口调整调用函数
+    glfwMakeContextCurrent(mainWindow); // 告诉 GLFW 将窗口的内容作为当前线程上的主要内容
+    glfwSetFramebufferSizeCallback(mainWindow, framebuffer_size_callback); // 注册窗口调整调用函数
+    glfwSetInputMode(mainWindow, GLFW_CURSOR, GLFW_CURSOR_DISABLED); // 捕捉光标
+    glfwSetCursorPosCallback(mainWindow, mouse_callback); // 监听鼠标移动事件
+    glfwSetScrollCallback(mainWindow, scroll_callback); // 注册鼠标滚轮的回调函数
     if (!gladLoadGLLoader((GLADloadproc) glfwGetProcAddress)) { // 初始化 GLAD
         std::cout << "Failed to initialize GLAD" << std::endl;
         exit(-1);
@@ -56,6 +105,21 @@ void load_texture(unsigned int &texture, const char *file) {
     }
     stbi_image_free(data);
 }
+
+void processInput(GLFWwindow *window) {
+    if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
+        glfwSetWindowShouldClose(window, true);
+    auto cameraSpeed = static_cast<float> (16 * deltaTime);
+    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
+        cameraPosition += cameraSpeed * cameraFront;
+    if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
+        cameraPosition -= cameraSpeed * cameraFront;
+    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
+        cameraPosition -= glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
+    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+        cameraPosition += glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
+}
+
 
 int main() {
     init();
@@ -135,12 +199,12 @@ int main() {
     shader.use();
     shader.setInt("texture1", 0);
     shader.setInt("texture2", 1);
-    glm::mat4 view;
-    view = glm::translate(view, glm::vec3(0, 0, -3.f));
-    glm::mat4 projection;
-    projection = glm::perspective(glm::radians(45.0f), 1.f, 0.1f, 100.0f);
     glEnable(GL_DEPTH_TEST); // 深度缓存
-    while (!glfwWindowShouldClose(window)) {
+    double lastTime = glfwGetTime();
+    while (!glfwWindowShouldClose(mainWindow)) {
+        processInput(mainWindow);
+        deltaTime = glfwGetTime() - lastTime;
+        lastTime = glfwGetTime();
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // 清除深度缓存
         shader.use();
         glActiveTexture(GL_TEXTURE0);
@@ -148,6 +212,8 @@ int main() {
         glActiveTexture(GL_TEXTURE1);
         glBindTexture(GL_TEXTURE_2D, texture2);
         glBindVertexArray(VAO);
+        glm::mat4 view = glm::lookAt(cameraPosition, cameraPosition + cameraFront, cameraUp);
+        glm::mat4 projection = glm::perspective(glm::radians(fov), 1.f, 0.1f, 100.0f);
         for (auto cubePosition: cubePositions) {
             glm::mat4 model;
             model = glm::translate(model, cubePosition);
@@ -157,7 +223,7 @@ int main() {
             glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(transform));
             glDrawArrays(GL_TRIANGLES, 0, 36);
         }
-        glfwSwapBuffers(window); // 交换在此渲染迭代期间用于渲染的颜色缓冲区
+        glfwSwapBuffers(mainWindow); // 交换在此渲染迭代期间用于渲染的颜色缓冲区
         glfwPollEvents(); // 检查是否触发了任何事件（如键盘输入或鼠标移动事件）
     }
     glfwTerminate(); // 删除所有已分配的 GLFW 资源
